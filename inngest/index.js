@@ -1,8 +1,11 @@
 import { Inngest } from "inngest";
 import connectDB from "../configs/db.js";
 import User from "../models/User.js";
+import Booking from "../models/Booking.js";
 
 export const inngest = new Inngest({ id: "ticket-box" });
+
+/* ------------------ User Functions ------------------ */
 
 // Create user
 const SyncUserCreation = inngest.createFunction(
@@ -14,14 +17,14 @@ const SyncUserCreation = inngest.createFunction(
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
     const userData = {
-  _id: id,
-  email: email_addresses[0].email_address,
-  name: (first_name && last_name) 
-    ? `${first_name} ${last_name}` 
-    : email_addresses[0].email_address.split("@")[0], // fallback
-  image: image_url,
-};
-
+      _id: id,
+      email: email_addresses[0].email_address,
+      name:
+        first_name && last_name
+          ? `${first_name} ${last_name}`
+          : email_addresses[0].email_address.split("@")[0], // fallback
+      image: image_url,
+    };
 
     await User.create(userData);
   }
@@ -58,4 +61,40 @@ const SyncUserUpdation = inngest.createFunction(
   }
 );
 
-export const functions = [SyncUserCreation, SyncUserDeletion, SyncUserUpdation];
+/* ------------------ Booking Functions ------------------ */
+
+// Save booking
+const SyncBookingCreation = inngest.createFunction(
+  { id: "sync-booking-to-db" },
+  { event: "booking/created" },
+  async ({ event }) => {
+    await connectDB();
+
+    const { movieId, date, time, seats, userId } = event.data;
+
+    // Ensure the user exists
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    const booking = await Booking.create({
+      movieId,
+      date,
+      time,
+      seats,
+      userId,
+    });
+
+    return booking;
+  }
+);
+
+// (optional) you could later add booking deletion or update events too
+
+/* ------------------ Export ------------------ */
+
+export const functions = [
+  SyncUserCreation,
+  SyncUserDeletion,
+  SyncUserUpdation,
+  SyncBookingCreation, // 👈 new booking function
+];
