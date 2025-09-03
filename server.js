@@ -5,35 +5,41 @@ import connectDB from "./configs/db.js";
 import { clerkMiddleware } from "@clerk/express";
 import { serve } from "inngest/express";
 import { inngest, functions } from "./inngest/index.js";
-import bookingRoutes from "./routes/bookings.js"; // ⬅️ Bookings route
+import bookingRoutes from "./routes/bookings.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Connect to MongoDB
-await connectDB();
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    console.log("MongoDB connected");
 
-// Middleware
-app.use(express.json());
-app.use(cors());
-app.use(clerkMiddleware());
+    // Middleware
+    app.use(express.json());
+    app.use(cors());
+    app.use(clerkMiddleware());
 
-// API Routes
-app.get("/", (req, res) => res.send("✅ Server is Live!"));
+    // Booking routes
+    app.use("/api/bookings", bookingRoutes);
 
-/**
- * Inngest route
- * Handles async events (user created, deleted, booking created, etc.)
- */
-app.use("/api/inngest", serve({ client: inngest, functions }));
+    // Base route
+    app.get("/", (req, res) => res.send("Server is Live!"));
 
-/**
- * Booking routes
- * Handles CRUD for bookings directly via REST
- */
-app.use("/api/bookings", bookingRoutes);
+    // Inngest route
+    app.use("/api/inngest", serve({ client: inngest, functions }));
 
-// Start server
-app.listen(port, () => {
-  console.log(`🚀 Server listening at http://localhost:${port}`);
-});
+    // Start server
+    app.listen(port, () => {
+      console.log(`🚀 Server listening at http://localhost:${port}`);
+    });
+
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+};
+
+// Start everything
+startServer();

@@ -1,7 +1,6 @@
 import { Inngest } from "inngest";
 import connectDB from "../configs/db.js";
 import User from "../models/User.js";
-import Booking from "../models/Booking.js"; // 👈 add this
 
 export const inngest = new Inngest({ id: "ticket-box" });
 
@@ -57,31 +56,10 @@ const SyncUserUpdation = inngest.createFunction(
   }
 );
 
-/* ----------------- BOOKING SYNC ----------------- */
 
-const SyncBookingCreation = inngest.createFunction(
-  { id: "sync-booking-created" },
-  { event: "booking/created" },
-  async ({ event }) => {
-    await connectDB();
-
-    const { movieId, date, time, seats, userId } = event.data;
-
-    const booking = new Booking({
-      movieId,
-      date,
-      time,
-      seats,
-      userId,
-    });
-
-    await booking.save();
-  }
-);
 
 export const functions = [
   SyncUserCreation,
   SyncUserDeletion,
   SyncUserUpdation,
-  SyncBookingCreation, // 👈 include it here
 ];
