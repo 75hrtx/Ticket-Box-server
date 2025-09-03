@@ -1,18 +1,22 @@
 import mongoose from "mongoose";
 
-const connectDB = async () => {
-  try {
-    mongoose.connection.on("connected", () =>
-      console.log("✅ MongoDB connected")
-    );
+let isConnected = false;
 
-    await mongoose.connect(`${process.env.MONGODB_URL}/ticket_box`, {
+const connectDB = async () => {
+  if (isConnected) return;
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URL, {
+      dbName: "ticket_box", // ✅ cleaner than appending /ticket_box
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
 
+    isConnected = true;
+    console.log("✅ MongoDB connected");
   } catch (error) {
     console.error("❌ MongoDB connection error:", error.message);
+    throw error;
   }
 };
 
