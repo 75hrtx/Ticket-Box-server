@@ -7,9 +7,7 @@ const connectDB = async () => {
 
   try {
     await mongoose.connect(process.env.MONGODB_URL, {
-      dbName: "ticket_box", // ✅ cleaner than appending /ticket_box
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      dbName: "ticket_box", // ✅ specify DB name here
     });
 
     isConnected = true;
