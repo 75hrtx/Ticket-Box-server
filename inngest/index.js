@@ -1,11 +1,11 @@
 import { Inngest } from "inngest";
 import connectDB from "../configs/db.js";
 import User from "../models/User.js";
-import Booking from "../models/Booking.js";
+import Booking from "../models/Booking.js"; // 👈 add this
 
 export const inngest = new Inngest({ id: "ticket-box" });
 
-/* ------------------ User Functions ------------------ */
+/* ----------------- USER SYNC ----------------- */
 
 // Create user
 const SyncUserCreation = inngest.createFunction(
@@ -13,16 +13,14 @@ const SyncUserCreation = inngest.createFunction(
   { event: "clerk/user.created" },
   async ({ event }) => {
     await connectDB();
-
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
     const userData = {
       _id: id,
       email: email_addresses[0].email_address,
-      name:
-        first_name && last_name
-          ? `${first_name} ${last_name}`
-          : email_addresses[0].email_address.split("@")[0], // fallback
+      name: (first_name && last_name) 
+        ? `${first_name} ${last_name}` 
+        : email_addresses[0].email_address.split("@")[0],
       image: image_url,
     };
 
@@ -36,7 +34,6 @@ const SyncUserDeletion = inngest.createFunction(
   { event: "clerk/user.deleted" },
   async ({ event }) => {
     await connectDB();
-
     const { id } = event.data;
     await User.findByIdAndDelete(id);
   }
@@ -48,7 +45,6 @@ const SyncUserUpdation = inngest.createFunction(
   { event: "clerk/user.updated" },
   async ({ event }) => {
     await connectDB();
-
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
     const userData = {
@@ -61,22 +57,17 @@ const SyncUserUpdation = inngest.createFunction(
   }
 );
 
-/* ------------------ Booking Functions ------------------ */
+/* ----------------- BOOKING SYNC ----------------- */
 
-// Save booking
 const SyncBookingCreation = inngest.createFunction(
-  { id: "sync-booking-to-db" },
+  { id: "sync-booking-created" },
   { event: "booking/created" },
   async ({ event }) => {
     await connectDB();
 
     const { movieId, date, time, seats, userId } = event.data;
 
-    // Ensure the user exists
-    const user = await User.findById(userId);
-    if (!user) throw new Error("User not found");
-
-    const booking = await Booking.create({
+    const booking = new Booking({
       movieId,
       date,
       time,
@@ -84,17 +75,13 @@ const SyncBookingCreation = inngest.createFunction(
       userId,
     });
 
-    return booking;
+    await booking.save();
   }
 );
-
-// (optional) you could later add booking deletion or update events too
-
-/* ------------------ Export ------------------ */
 
 export const functions = [
   SyncUserCreation,
   SyncUserDeletion,
   SyncUserUpdation,
-  SyncBookingCreation, // 👈 new booking function
+  SyncBookingCreation, // 👈 include it here
 ];
