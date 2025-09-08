@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 const BookingSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   movieId: { type: String, required: true },
-  title: { type: String, required: true },       // new
-  duration: { type: String, required: true },    // new
-  image: { type: String, required: true },       // new
+  title: { type: String, required: true },
+  duration: { type: String, required: true },
+  image: { type: String, required: true },
   date: { type: String, required: true },
   time: { type: String, required: true },
   seats: [{ type: String, required: true }],
@@ -13,4 +13,5 @@ const BookingSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
 }, { timestamps: true });
 
-export default mongoose.model("Booking", BookingSchema);
+
+export default mongoose.models.Booking || mongoose.model("Booking", BookingSchema);

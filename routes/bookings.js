@@ -3,13 +3,16 @@ import { createBooking, getBookings, deleteBooking } from "../controllers/bookin
 
 const router = express.Router();
 
-// POST /api/bookings → create booking
+//  Create a new booking
+// POST /api/bookings
 router.post("/", createBooking);
 
-// GET /api/bookings?userId=... → fetch user bookings
+//  Get all bookings OR bookings by user (if ?userId=123 passed)
+// GET /api/bookings
 router.get("/", getBookings);
 
-// DELETE /api/bookings/:id → cancel booking
+//  Delete a booking by ID
+// DELETE /api/bookings/:id
 router.delete("/:id", deleteBooking);
 
 export default router;
