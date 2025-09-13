@@ -49,12 +49,20 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// Get all bookings for a user (or all if no userId passed)
+// 🔍 Add logs to this function to debug bookings fetch
 export const getBookings = async (req, res) => {
   try {
     const { userId } = req.query;
+
+    console.log("🔍 GET /api/bookings called");
+    console.log("➡️ userId received:", userId);
+
     const filter = userId ? { userId } : {};
+    console.log("🧪 MongoDB filter:", filter);
+
     const bookings = await Booking.find(filter).sort({ createdAt: -1 });
+
+    console.log(`✅ Found ${bookings.length} bookings for userId: ${userId}`);
 
     return res.json({ bookings });
   } catch (err) {
